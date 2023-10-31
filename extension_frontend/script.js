@@ -3,6 +3,52 @@ const data = {
   description: ['This', 'is', 'this', 'that'],
 }
 
+const scrap_data = () => {
+  const promise = new Promise((resolve, reject) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      if (tabs.length > 0) {
+        chrome.scripting.executeScript(
+          {
+            target: { tabId: tabs[0].id },
+            function: function () {
+              return {
+                title: document.title,
+                text: document.documentElement.innerText,
+              }
+            },
+          },
+          function (result) {
+            if (chrome.runtime.lastError) {
+              console.error(chrome.runtime.lastError)
+            } else {
+              document.getElementById('title').innerHTML =
+                result[0].result.title
+              // document.getElementById('content').innerHTML =
+              resolve(result[0].result.text)
+            }
+          }
+        )
+      } else {
+        console.error('No active tabs found in the current window.')
+      }
+    })
+  })
+  return promise
+}
+
+const getPredictedData = (scraped_data) => {
+  console.log('scrap scraped_data ', scraped_data)
+  fetch('http://127.0.0.1:5000/predict', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(scraped_data),
+  }).then(function (response) {
+    console.log(response)
+
+    getCategories().then(onClick)
+  })
+}
+
 const categories_list = Object.keys(data)
 const categories_div = document.getElementById('categories')
 
@@ -55,4 +101,4 @@ const onClick = () => {
   })
 }
 
-getCategories().then(onClick)
+scrap_data().then((data) => getPredictedData(data))
