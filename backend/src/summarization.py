@@ -9,13 +9,15 @@ import heapq
 import csv
 import sys
 from nltk.stem import PorterStemmer
+import os
 
 
 def summarize(source):
     soup = bs(source, 'lxml')
     x = PorterStemmer()
     imp_words = {}
-    with open('terms.csv', mode='r', newline='') as csv_file:
+    file_path = os.path.join('src', 'terms.csv')
+    with open(file_path, mode='r', newline='') as csv_file:
         csv_reader = csv.reader(csv_file)
         header = next(csv_reader, None)
         for row in csv_reader:
@@ -57,8 +59,3 @@ def summarize(source):
                         sent2score[sentence] += w2c[w]
     best_sent = heapq.nlargest(20, sent2score, key=sent2score.get)
     return best_sent
-
-
-
-
-
