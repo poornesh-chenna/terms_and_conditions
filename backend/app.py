@@ -34,7 +34,6 @@ def get():
             d[output[0]] = newlist
         else:
             d[output[0]].append(sentence)
-    print(d)
     return {'data': d}, 200
 
 
